@@ -1,0 +1,20 @@
+appmap_dir: tmp\appmap
+language: python
+name: chatgpt_atm_project
+packages:
+- path: pytz
+- path: atm
+- path: asgiref
+- path: rest_framework_simplejwt
+- path: setuptools
+- path: _distutils_hack
+- path: sqlparse
+- path: jwt
+- path: atm_simulation_project
+- path: pip
+- path: pkg_resources
+- path: rest_framework
+- path: tzdata
+- path: backports
+- path: django
+- path: wheel
