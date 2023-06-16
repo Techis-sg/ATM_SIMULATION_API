@@ -38,9 +38,13 @@ class ObtainTokenView(views.APIView):
                 print("\n account ", account)
                 user = account.user
                 print("\n user  ", user)
+            card_details = {
+                "card_number":dbcardwithpin.card_number,
+                "pin":dbcardwithpin.pin,
+            }
 
         # Generate the JWT token
-        jwt_token = JWTAuthentication.create_jwt(user)
+        jwt_token = JWTAuthentication.create_jwt(user,card_details)
 
         return Response({'token': jwt_token})
 

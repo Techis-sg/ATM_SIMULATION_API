@@ -54,11 +54,11 @@ class JWTAuthentication(authentication.BaseAuthentication):
         # Get the user from the database
         card_number = payload.get('card_number')
         pin = payload.get('pin')
-        dbcard = Card.objects.filter(card=card_number, pin=pin).first()
+        dbcard = Card.objects.filter(card_number=card_number, pin=pin).first()
         if dbcard is None:
             raise AuthenticationFailed('Account with this card number and pin not found')
         else:
-            account = Account.objects.filter(account=dbcard.account.account_id)
+            account = Account.objects.filter(account_id=dbcard.account.account_id).first()
             user = account.user
 
         # Return the user and token payload
@@ -68,7 +68,7 @@ class JWTAuthentication(authentication.BaseAuthentication):
         return 'Bearer'
 
     @classmethod
-    def create_jwt(cls, user):
+    def create_jwt(cls, user, card_details):
         # Create the JWT payload
         payload = {
             'user_identifier': user.username,
@@ -76,6 +76,8 @@ class JWTAuthentication(authentication.BaseAuthentication):
             # set the expiration time for 5 hour from now
             'iat': datetime.now().timestamp(),
             'username': user.username,
+            "card_number":card_details.get("card_number"),
+            "pin":card_details.get("pin")
         }
 
         # Encode the JWT with your secret key
