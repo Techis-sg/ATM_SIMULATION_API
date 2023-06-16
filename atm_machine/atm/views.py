@@ -16,6 +16,8 @@ from .serializers import (
     ChangePinSerializer,
 )
 from atm_machine.custom_auth_backend import JWTAuthentication
+import decimal
+
 
 
 class CardCreateView(generics.CreateAPIView):
@@ -37,7 +39,7 @@ class UserFunctionalityViewSet(viewsets.ViewSet):
         """
         Get the balance of the account associated with a card.
         """
-        card = get_object_or_404(Card, number=pk)
+        card = get_object_or_404(Card, card_number=request.card)
         account = card.account
         serializer = AccountSerializer(account)
         return Response(serializer.data)
@@ -47,9 +49,10 @@ class UserFunctionalityViewSet(viewsets.ViewSet):
         """
         Withdraw cash from the account associated with a card.
         """
-        card = get_object_or_404(Card, number=pk)
+        card = get_object_or_404(Card, card_number=request.card)
         account = card.account
-        withdrawal_amount = request.data.get('amount')
+        withdrawal_amount = decimal.Decimal(request.data.get('amount'))
+
 
         if account.balance >= withdrawal_amount:
             account.balance -= withdrawal_amount
@@ -57,7 +60,7 @@ class UserFunctionalityViewSet(viewsets.ViewSet):
             transaction = Transaction.objects.create(
                 account=account,
                 amount=withdrawal_amount,
-                transaction_type='Withdrawal'
+                actiontype='D'
             )
             serializer = TransactionSerializer(transaction)
             return Response(serializer.data)
@@ -69,16 +72,16 @@ class UserFunctionalityViewSet(viewsets.ViewSet):
         """
         Deposit cash to the account associated with a card.
         """
-        card = get_object_or_404(Card, number=pk)
+        card = get_object_or_404(Card, card_number=request.card)
         account = card.account
-        deposit_amount = request.data.get('amount')
+        deposit_amount = decimal.Decimal(request.data.get('amount'))
 
         account.balance += deposit_amount
         account.save()
         transaction = Transaction.objects.create(
             account=account,
             amount=deposit_amount,
-            transaction_type='Deposit'
+            actiontype='C'
         )
         serializer = TransactionSerializer(transaction)
         return Response(serializer.data, status=201)
@@ -88,7 +91,7 @@ class UserFunctionalityViewSet(viewsets.ViewSet):
         """
         Change the PIN associated with a card.
         """
-        card = get_object_or_404(Card, number=pk)
+        card = get_object_or_404(Card, card_number=request.card)
         serializer = ChangePinSerializer(data=request.data)
 
         if serializer.is_valid():
