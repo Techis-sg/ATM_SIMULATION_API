@@ -60,7 +60,8 @@ class JWTAuthentication(authentication.BaseAuthentication):
         else:
             account = Account.objects.filter(account_id=dbcard.account.account_id).first()
             user = account.user
-
+            #adding user and transaction related information to request object
+            request.card = dbcard
         # Return the user and token payload
         return user, payload
 
