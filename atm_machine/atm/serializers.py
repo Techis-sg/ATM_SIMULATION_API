@@ -44,7 +44,8 @@ class TransactionSerializer(serializers.ModelSerializer):
 
 
 class ChangePinSerializer(serializers.Serializer):
-    pin = serializers.CharField(max_length=4, min_length=4)
+    old_pin = serializers.CharField(max_length=4,min_length=4)
+    new_pin = serializers.CharField(max_length=4, min_length=4)
 
     def validate_pin(self, value):
         try:

@@ -53,10 +53,9 @@ class JWTAuthentication(authentication.BaseAuthentication):
 
         # Get the user from the database
         card_number = payload.get('card_number')
-        pin = payload.get('pin')
-        dbcard = Card.objects.filter(card_number=card_number, pin=pin).first()
+        dbcard = Card.objects.filter(card_number=card_number).first()
         if dbcard is None:
-            raise AuthenticationFailed('Account with this card number and pin not found')
+            raise AuthenticationFailed('Card not found')
         else:
             account = Account.objects.filter(account_id=dbcard.account.account_id).first()
             user = account.user
@@ -77,7 +76,6 @@ class JWTAuthentication(authentication.BaseAuthentication):
             'iat': datetime.now().timestamp(),
             'username': user.username,
             "card_number":card_details.get("card_number"),
-            "pin":card_details.get("pin")
         }
 
         # Encode the JWT with your secret key
