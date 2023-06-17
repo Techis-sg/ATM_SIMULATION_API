@@ -10,43 +10,47 @@ from atm.serializers import AuthenticateCard
 from .custom_auth_backend import JWTAuthentication
 from accounts.models import Account
 from atm.models import Card
+import os,sys
 
 User = get_user_model()
 
 class ObtainTokenView(views.APIView):
-    permission_classes = [AllowAny]
-    serializer_class = ObtainTokenSerializer
+        permission_classes = [AllowAny]
+        serializer_class = ObtainTokenSerializer
 
-    def post(self, request, *args, **kwargs):
-        serializer = self.serializer_class(data=request.data)
-        serializer.is_valid(raise_exception=True)
+        def post(self, request, *args, **kwargs):
+            try:
+                serializer = self.serializer_class(data=request.data)
+                serializer.is_valid(raise_exception=True)
 
-        card_number = serializer.validated_data.get('card_number')
-        pin = serializer.validated_data.get('pin')
+                card_number = serializer.validated_data.get('card_number')
+                pin = serializer.validated_data.get('pin')
 
-        dbcard = Card.objects.filter(card_number=card_number).first()
-        print("\n dbcard ", dbcard)
-        if dbcard is None:
-            return Response({'message': 'Card not found'}, status=status.HTTP_400_BAD_REQUEST)
-        else:
-            dbcardwithpin = Card.objects.filter(card_number=card_number, pin=pin).first()
-            if dbcardwithpin is None:
-                return Response({'message': 'Incorrect pin'}, status=status.HTTP_400_BAD_REQUEST)
-            else:
-                print("\n dbcard.account.account_id  ", dbcard.account.account_id)
-                account = Account.objects.filter(account_id=dbcard.account.account_id).first()
-                print("\n account ", account)
-                user = account.user
-                print("\n user  ", user)
-            card_details = {
-                "card_number":dbcardwithpin.card_number,
-                "pin":dbcardwithpin.pin,
-            }
+                dbcard = Card.objects.filter(card_number=card_number).first()
+                if dbcard is None:
+                    return Response({'message': 'Card not found'}, status=status.HTTP_400_BAD_REQUEST)
+                else:
+                    dbcardwithpin = Card.objects.filter(card_number=card_number, pin=pin).first()
+                    if dbcardwithpin is None:
+                        return Response({'message': 'Incorrect pin'}, status=status.HTTP_400_BAD_REQUEST)
+                    else:
+                        account = Account.objects.filter(account_id=dbcard.account.account_id).first()
+                        user = account.user
+                    card_details = {
+                        "card_number":dbcardwithpin.card_number,
+                        "pin":dbcardwithpin.pin,
+                    }
 
-        # Generate the JWT token
-        jwt_token = JWTAuthentication.create_jwt(user,card_details)
+                # Generate the JWT token
+                jwt_token = JWTAuthentication.create_jwt(user,card_details)
 
-        return Response({'token': jwt_token})
+                return Response({'token': jwt_token})
+            except Exception as e:
+                exc_type, exc_obj, exc_tb = sys.exc_info()
+                fname = os.path.split(exc_tb.tb_frame.f_code.co_filename)[1]
+                logMessage = "Exception in ObtainTokenView %s*****%s*****%s"%(str(exc_type),str(fname),str(exc_tb.tb_lineno))
+                print(logMessage)
+                return Response({"error":"Something went wrong"},status=500)
 
 
 # from django.contrib.auth import get_user_model

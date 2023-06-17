@@ -1,0 +1,4 @@
+Ashish - Full transactions views, urls, models, serializers
+Srikant - Admin Functionalities
+Sai Prasad -  custom jwt authentication, user endpoints, ObtainTokenView
+Shobhit - models, custom jwt authentication, user endpoints and functionality
